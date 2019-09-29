@@ -3,18 +3,19 @@ module Data.Numbers.Divisors
   , positiveDivisors
   ) where
 
+import           Control.Conditional
+import           Control.Monad
 import           Data.Numbers.Primes (primeFactors)
 
 -- | Returns all divisors of a number sorted ascending
 divisors :: Integral a => a -> [a]
-divisors n = foldl (flip (:)) posDivisors $ map negate posDivisors
-  where posDivisors = positiveDivisors n
+divisors = liftM2 (foldl $ flip (:)) id (map negate) . positiveDivisors
 
 -- | Returns positive divisors of a number sorted ascending
 positiveDivisors :: Integral a => a -> [a]
-positiveDivisors n
-  | n < 1     = []
-  | otherwise = positiveDivisorsByFactors $ primeFactors n
+positiveDivisors =
+  select (< 1) (pure [])
+  $ positiveDivisorsByFactors . primeFactors
 
 positiveDivisorsByFactors :: Integral a => [a] -> [a]
 positiveDivisorsByFactors factors = helper (map (const 0) maxPowers)
